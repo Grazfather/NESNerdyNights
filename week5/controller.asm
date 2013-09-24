@@ -105,8 +105,44 @@ LatchController:
   LDA $4016       ; player 1 - B
   LDA $4016       ; player 1 - Select
   LDA $4016       ; player 1 - Start
-  LDA $4016       ; player 1 - Up
-  LDA $4016       ; player 1 - Down
+
+ReadUp:
+  LDA $4016       ; player 1 - B
+  AND #%00000001  ; only look at bit 0
+  BEQ ReadUpDone  ; branch to ReadBDone if button is NOT pressed (0)
+                  ; add instructions here to do something when button IS pressed (1)
+  LDX #$00        ; x = 0
+MoveSpriteUp:
+  LDA $0200,x     ; load sprite X position
+  SEC             ; make sure carry flag is set
+  SBC #$01        ; A = A + 1
+  STA $0200,x     ; save sprite X position
+  CLC             ; make sure carry flag is clear
+  TXA             ; A = X
+  ADC #$04        ; A += 4
+  TAX             ; X = A -> Net effect: X += 4
+  CPX #$10
+  BNE MoveSpriteUp
+ReadUpDone:       ; handling this button is done
+
+ReadDown:
+  LDA $4016       ; player 1 - A
+  AND #%00000001  ; only look at bit 0
+  BEQ ReadDownDone; branch to ReadADone if button is NOT pressed (0)
+                  ; add instructions here to do something when button IS pressed (1)
+  LDX #$00        ; x = 0
+MoveSpriteDown:
+  LDA $0200,x     ; load sprite X position
+  CLC             ; make sure the carry flag is clear
+  ADC #$01        ; A = A + 1
+  STA $0200,x     ; save sprite X position
+  CLC             ; make sure carry flag is clear
+  TXA             ; A = X
+  ADC #$04        ; A += 4
+  TAX             ; X = A -> Net effect: X += 4
+  CPX #$10
+  BNE MoveSpriteDown
+ReadDownDone:      ; handling this button is done
 
 ReadLeft:
   LDA $4016       ; player 1 - Left
@@ -122,7 +158,7 @@ MoveSpriteLeft:
   TXA             ; A = X
   CLC             ; make sure carry flag is clear
   ADC #$04        ; A +=4
-  TAX             ; X = A
+  TAX             ; X = A -> Net effect: X += 4
   CPX #$10        ; 4 sprites: 16 bytes
   BNE MoveSpriteLeft
 ReadLeftDone:     ; handling this button is done
