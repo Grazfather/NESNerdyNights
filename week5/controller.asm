@@ -2,13 +2,13 @@
   .ineschr 1   ; 1x  8KB CHR data
   .inesmap 0   ; mapper 0 = NROM, no bank swapping
   .inesmir 1   ; background mirroring
-  
+
 
 ;;;;;;;;;;;;;;;
 
-    
+
   .bank 0
-  .org $C000 
+  .org $C000
 RESET:
   SEI          ; disable IRQs
   CLD          ; disable decimal mode
@@ -38,7 +38,7 @@ clrmem:
   STA $0300, x
   INX
   BNE clrmem
-   
+
 vblankwait2:      ; Second wait for vblank, PPU is ready after this
   BIT $2002
   BPL vblankwait2
@@ -74,8 +74,8 @@ LoadSpritesLoop:
   CPX #$20              ; Compare X to hex $20, decimal 32
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
-              
-              
+
+
 
   LDA #%10000000   ; enable NMI, sprites from Pattern Table 1
   STA $2000
@@ -85,8 +85,8 @@ LoadSpritesLoop:
 
 Forever:
   JMP Forever     ;jump back to Forever, infinite loop
-  
- 
+
+
 
 NMI:
   LDA #$00
@@ -153,16 +153,16 @@ sprites:
   .db $88, $35, $00, $88   ;sprite 3
 
   .org $FFFA     ;first of the three vectors starts here
-  .dw NMI        ;when an NMI happens (once per frame if enabled) the 
+  .dw NMI        ;when an NMI happens (once per frame if enabled) the
                    ;processor will jump to the label NMI:
   .dw RESET      ;when the processor first turns on or is reset, it will jump
                    ;to the label RESET:
   .dw 0          ;external interrupt IRQ is not used in this tutorial
-  
-  
-;;;;;;;;;;;;;;  
-  
-  
+
+
+;;;;;;;;;;;;;;
+
+
   .bank 2
   .org $0000
   .incbin "mario.chr"   ;includes 8KB graphics file from SMB1
