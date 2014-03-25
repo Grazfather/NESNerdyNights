@@ -59,7 +59,7 @@ LoadPalettesLoop:
                           ; etc
   STA $2007             ; write to PPU
   INX                   ; X = X + 1
-  CPX #$20              ; Compare X to hex $10, decimal 16 - copying 16 bytes = 4 sprites
+  CPX #$20              ; Compare X to hex $20, decimal 32
   BNE LoadPalettesLoop  ; Branch to LoadPalettesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -71,7 +71,7 @@ LoadSpritesLoop:
   LDA sprites, x        ; load data from address (sprites +  x)
   STA $0200, x          ; store into RAM address ($0200 + x)
   INX                   ; X = X + 1
-  CPX #$20              ; Compare X to hex $20, decimal 32
+  CPX #$10              ; Compare X to hex $10, decimal 16 - copying 16 bytes = 4 sprites
   BNE LoadSpritesLoop   ; Branch to LoadSpritesLoop if compare was Not Equal to zero
                         ; if compare was equal to 32, keep going down
 
@@ -89,6 +89,7 @@ Forever:
 
 
 NMI:
+  STX $0000       ; Save X
   LDA #$00
   STA $2003       ; set the low byte (00) of the RAM address
   LDA #$02
@@ -105,19 +106,18 @@ LatchController:
   LDA $4016       ; player 1 - B
   LDA $4016       ; player 1 - Select
   LDA $4016       ; player 1 - Start
-
 ReadUp:
-  LDA $4016       ; player 1 - B
+  LDA $4016       ; player 1 - Up
   AND #%00000001  ; only look at bit 0
-  BEQ ReadUpDone  ; branch to ReadBDone if button is NOT pressed (0)
+  BEQ ReadUpDone  ; branch to ReadUpDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
   LDX #$00        ; x = 0
 MoveSpriteUp:
   LDA $0200,x     ; load sprite X position
-  SEC             ; make sure carry flag is set
-  SBC #$01        ; A = A + 1
+  SEC             ; make sure the carry flag is set
+  SBC #$01        ; A = A - 1
   STA $0200,x     ; save sprite X position
-  CLC             ; make sure carry flag is clear
+  CLC             ; make sure the carry flag is clear
   TXA             ; A = X
   ADC #$04        ; A += 4
   TAX             ; X = A -> Net effect: X += 4
@@ -126,9 +126,9 @@ MoveSpriteUp:
 ReadUpDone:       ; handling this button is done
 
 ReadDown:
-  LDA $4016       ; player 1 - A
+  LDA $4016       ; player 1 - Down
   AND #%00000001  ; only look at bit 0
-  BEQ ReadDownDone; branch to ReadADone if button is NOT pressed (0)
+  BEQ ReadDownDone; branch to ReadDownDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
   LDX #$00        ; x = 0
 MoveSpriteDown:
@@ -136,18 +136,18 @@ MoveSpriteDown:
   CLC             ; make sure the carry flag is clear
   ADC #$01        ; A = A + 1
   STA $0200,x     ; save sprite X position
-  CLC             ; make sure carry flag is clear
+  CLC             ; make sure the carry flag is clear
   TXA             ; A = X
   ADC #$04        ; A += 4
   TAX             ; X = A -> Net effect: X += 4
   CPX #$10
   BNE MoveSpriteDown
-ReadDownDone:      ; handling this button is done
+ReadDownDone:     ; handling this button is done
 
 ReadLeft:
   LDA $4016       ; player 1 - Left
   AND #%00000001  ; only look at bit 0
-  BEQ ReadLeftDone; branch to ReadADone if button is NOT pressed (0)
+  BEQ ReadLeftDone; branch to ReadLeftDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
   LDX #$00        ; x = 0
 MoveSpriteLeft:
@@ -155,19 +155,18 @@ MoveSpriteLeft:
   SEC             ; make sure the carry flag is set
   SBC #$01        ; A = A - 1
   STA $0203,x     ; save sprite X position
+  CLC             ; make sure the carry flag is clear
   TXA             ; A = X
-  CLC             ; make sure carry flag is clear
-  ADC #$04        ; A +=4
+  ADC #$04        ; A += 4
   TAX             ; X = A -> Net effect: X += 4
-  CPX #$10        ; 4 sprites: 16 bytes
+  CPX #$10
   BNE MoveSpriteLeft
-ReadLeftDone:     ; handling this button is done
-
+ReadLeftDone:        ; handling this button is done
 
 ReadRight:
-  LDA $4016       ; player 1 - A
+  LDA $4016       ; player 1 - Right
   AND #%00000001  ; only look at bit 0
-  BEQ ReadRightDone; branch to ReadADone if button is NOT pressed (0)
+  BEQ ReadRightDone; branch to ReadRightDone if button is NOT pressed (0)
                   ; add instructions here to do something when button IS pressed (1)
   LDX #$00        ; x = 0
 MoveSpriteRight:
@@ -175,16 +174,15 @@ MoveSpriteRight:
   CLC             ; make sure the carry flag is clear
   ADC #$01        ; A = A + 1
   STA $0203,x     ; save sprite X position
-  CLC             ; make sure carry flag is clear
+  CLC             ; make sure the carry flag is clear
   TXA             ; A = X
   ADC #$04        ; A += 4
   TAX             ; X = A -> Net effect: X += 4
-  CPX #$10        ; 4 sprites: 16 bytes
+  CPX #$10
   BNE MoveSpriteRight
 ReadRightDone:    ; handling this button is done
 
-
-
+  LDX #$0000      ; Restore X
   RTI             ; return from interrupt
 
 ;;;;;;;;;;;;;;
